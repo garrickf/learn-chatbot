@@ -1,3 +1,5 @@
+from emoji import *
+
 # Sentences we'll respond with if we have no idea what the user just said
 NONE_RESPONSES = [
     "uh whatever",
@@ -15,6 +17,6 @@ GREETING_RESPONSES = [
     #"'sup bro", 
     #"hey", 
     #"*nods*", 
-    "hey you get my snap?",
+    "hey you get my snap?" + EMOJI_TO_PYTHON['heart_eyes'],
     #":3"
 ]

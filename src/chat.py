@@ -60,6 +60,7 @@ def ask(text):
 	parsed = TextBlob(cleaned)
 
 	return respond(cleaned)
+	return str(parsed.tags)
 
 GREETING_KEYWORDS = ("hello", "hi", "greetings", "sup", "what's up",)
 

@@ -13,6 +13,7 @@ import flask
 import requests
 from flask_sqlalchemy import SQLAlchemy
 import chat
+import time
 
 FACEBOOK_API_MESSAGE_SEND_URL = (
     'https://graph.facebook.com/v2.6/me/messages?access_token=%s')
@@ -114,6 +115,11 @@ def fb_webhook():
             message_text = chat.ask(message['text'])
             request_url = FACEBOOK_API_MESSAGE_SEND_URL % (
                 app.config['FACEBOOK_PAGE_ACCESS_TOKEN'])
+            requests.post(request_url,
+                          headers={'Content-Type': 'application/json'},
+                          json={'recipient': {'id': sender_id},
+                                'sender_action': "typing_on"})
+            #time.sleep(5) # sleep for five seconds
             requests.post(request_url,
                           headers={'Content-Type': 'application/json'},
                           json={'recipient': {'id': sender_id},
