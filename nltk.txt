@@ -1,1 +1,6 @@
-all-corpora
+averaged_perceptron_tagger
+punkt
+movie_reviews
+conll2000
+wordnet
+brown
