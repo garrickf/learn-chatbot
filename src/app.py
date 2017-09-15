@@ -12,6 +12,7 @@ import os
 import flask
 import requests
 from flask_sqlalchemy import SQLAlchemy
+import chat
 
 FACEBOOK_API_MESSAGE_SEND_URL = (
     'https://graph.facebook.com/v2.6/me/messages?access_token=%s')
@@ -110,7 +111,7 @@ def fb_webhook():
             if 'text' not in message:
                 continue
             sender_id = event['sender']['id']
-            message_text = message['text']
+            message_text = chat.ask(message['text'])
             request_url = FACEBOOK_API_MESSAGE_SEND_URL % (
                 app.config['FACEBOOK_PAGE_ACCESS_TOKEN'])
             requests.post(request_url,
