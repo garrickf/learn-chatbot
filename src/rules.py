@@ -37,7 +37,7 @@ def find_candidate_parts_of_speech(parsed):
 	return pronoun, noun, adjective, verb
 
 def find_pronoun(sent):
-	"""Given a sentence, find a preferred pronoun to respond with. Returns None if no candidate
+	"""Given a sentence, find the likely pronoun of address. Returns None if no candidate
 	pronoun is found in the input"""
 	pronoun = None
 
@@ -45,7 +45,7 @@ def find_pronoun(sent):
 		# Disambiguate pronouns
 		if part_of_speech == 'PRP' and word.lower() == 'you':
 			pronoun = 'you'
-		elif part_of_speech == 'PRP' and word.lower() == 'i':
+		elif word.lower() == 'i':
 			# If the user mentioned themselves, then they will definitely be the pronoun
 			pronoun = 'I'
 		elif part_of_speech == 'PRP':
@@ -137,11 +137,12 @@ def prob_is_declarative(sent, verb):
 	certainty = 0
 	first = sent.tags[0]
 	if verb[0] is not None: # to be verb (strong)
+		certainty += .35
 		verb_word = verb[0]
 		if Word(verb_word).lemmatize('v') == 'be':
-			certainty += .6
-	if first[1].startswith('N'): # begins with noun (strong)
-		certainty += .4
+			certainty += .35
+	if first[1].startswith('N') or first[1].startswith('P'): # begins with noun (strong)
+		certainty += .2
 	if sent[-1] == '.': # ends with .
 		certainty += .2
 	print 'dec', certainty 

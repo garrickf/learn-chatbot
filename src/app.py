@@ -115,6 +115,7 @@ def fb_webhook():
             
             request_url = FACEBOOK_API_MESSAGE_SEND_URL % (
                 app.config['FACEBOOK_PAGE_ACCESS_TOKEN'])
+            
             chat.chat(message['text'], request_url, sender_id)
             '''requests.post(request_url,
                           headers={'Content-Type': 'application/json'},

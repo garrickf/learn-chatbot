@@ -11,5 +11,5 @@ def emojify(string):
 			#print key
 			if key in EMOJI_TO_PYTHON: tokens[idx] = EMOJI_TO_PYTHON[key]
 			else: tokens[idx] = ''
-	print ' '.join(tokens)
+	# print ' '.join(tokens)
 	return ' '.join(tokens) # join with single whitespace character

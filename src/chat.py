@@ -24,8 +24,8 @@ def start_typing(request_url, sender_id):
 
 def chat(text, request_url, sender_id):
 	start_typing(request_url, sender_id)
-	message_text = form_reply(text, request_url, sender_id)
-	post_message(message_text, request_url, sender_id)
+	form_reply(text, request_url, sender_id)
+	#post_message(message_text, request_url, sender_id)
 	#return respond(cleaned)
 	#grammar = CFG.fromstring(demo_grammar)
   	#return generate(grammar, n=1)
@@ -36,24 +36,22 @@ def form_reply(text, request_url, sender_id):
 
 	check_for_greeting(parsed, request_url, sender_id)
 
+	# check passphrases: next step!
+
 	pronoun, noun, adjective, verb = sentutil.find_candidate_parts_of_speech(parsed)
 	sent_type = sentutil.determine_sent_type(parsed, verb)
 
 	if sent_type == 'dec':
-		return 'This is a declarative sentence. I think.'
+		handle_statement(parsed, request_url, sender_id)
 	elif sent_type == 'imp':
-		return 'This is an imperative sentence. You\'re making me do something, I swear!'
+		handle_command(parsed, request_url, sender_id)
 	elif sent_type == 'exc':
-		return 'This is an exclamatory sentence. Ahh!'
+		handle_exclamation(parsed, request_url, sender_id)
 	elif sent_type == 'int':
-		return 'This is an interrogative sentence?'
+		handle_question(parsed, request_url, sender_id)
 	elif sent_type == '?':
-		return 'What was that, again?'
+		post_message(random.choice(NONE_RESPONSES), request_url, sender_id)
 
-
-
-
-'''Their stuff.'''
 
 def check_for_greeting(sent, request_url, sender_id):
     for word in sent.words:
@@ -61,6 +59,68 @@ def check_for_greeting(sent, request_url, sender_id):
             post_message(random.choice(GREETING_RESPONSES), request_url, sender_id)
             return True
 	return False
+
+def handle_exclamation(sent, request_url, sender_id):
+	case = random.randint(0, 3)
+
+	if case <= 1:
+		post_message(random.choice(CANNED_EXCLAMATIONS), request_url, sender_id)
+	if case == 2:
+		post_message(str(sent), request_url, sender_id)
+	if case == 3:
+		post_message(str(sent) + '!!!!', request_url, sender_id)
+
+def handle_question(sent, request_url, sender_id):
+	case = random.randint(0, 3)
+
+	if case <= 3:
+		post_message(random.choice(CANNED_QUESTION_RESPONSES), request_url, sender_id)
+
+def handle_command(sent, request_url, sender_id):
+	case = random.randint(0, 3)
+
+	if case <= 3:
+		post_message(random.choice(CANNED_COMMAND_RESPONSES), request_url, sender_id)
+
+def handle_statement(sent, request_url, sender_id):
+	pronoun, noun, adjective, verb = sentutil.find_candidate_parts_of_speech(sent)
+	
+	case = random.randint(0, 3)
+	case = 2
+
+	if case == 0: # can a response sometimes
+		post_message(random.choice(CANNED_STATEMENT_RESPONSES), request_url, sender_id)
+	if case == 1: # ask to elaborate sometimes
+		post_message('huh. tell me more about ' + noun[0], request_url, sender_id)
+	if case == 2: # detect polarity sometimes
+		polarity = sent.sentiment.polarity
+		if polarity < -.1:
+			if pronoun == 'I': # directed
+				post_message('harrrsh. no need to be hard on yourself bruh', request_url, sender_id)
+			elif pronoun == 'you': # self
+				post_message('woah mean >:( you are hurting my fragile personailty', request_url, sender_id)
+			else:
+				post_message('harrrsh', request_url, sender_id)
+		elif polarity > .1:
+			if pronoun == 'I': # directed
+				post_message('yeah...well...im, uh better', request_url, sender_id)
+			elif pronoun == 'you': # self
+				post_message('dude keep up the compliments!', request_url, sender_id)
+			else:
+				post_message('aw thats nice', request_url, sender_id)
+		else:
+			post_message('p neutral man', request_url, sender_id)
+	if case == 3: # detect subjectivity sometimes
+		subjectivity = sent.sentiment.subjectivity
+		print 'sub', subjectivity
+		if subjectivity < .15:
+			post_message('is that a priori knowlege lol', request_url, sender_id)
+		elif subjectivity < .65:
+			post_message('ok. maybe a little subjective bro but im here for it', request_url, sender_id)
+		else:
+			post_message('hold me, the subjectivity lol', request_url, sender_id)
+
+'''Their stuff.'''
 
 # start:example-self.py
 # If the user tries to tell us something about ourselves, use one of these responses
@@ -137,6 +197,7 @@ def check_for_comment_about_bot(pronoun, noun, adjective):
     return resp
 
 # Template for responses that include a direct noun which is indefinite/uncountable
+
 SELF_VERBS_WITH_NOUN_CAPS_PLURAL = [
     "My last startup totally crushed the {noun} vertical",
     "Were you aware I was a serial entrepreneur in the {noun} sector?",
