@@ -1,25 +1,6 @@
 from textblob import Word, TextBlob
-from textblob.wordnet import VERB
-#import logging
 
-def form_reply(text):
-	cleaned = text # sanitize text?
-	parsed = TextBlob(cleaned)
-	pronoun, noun, adjective, verb = find_candidate_parts_of_speech(parsed)
-	sent_type = determine_sent_type(parsed, verb)
-	#print str(parsed.tags)
-	#print sent_type
-	if sent_type == 'dec':
-		return 'This is a declarative sentence. I think.'
-	elif sent_type == 'imp':
-		return 'This is an imperative sentence. You\'re making me do something, I swear!'
-	elif sent_type == 'exc':
-		return 'This is an exclamatory sentence. Ahh!'
-	elif sent_type == 'int':
-		return 'This is an interrogative sentence?'
-	elif sent_type == '?':
-		return 'What was that, again?'
-	'''
+'''
 	print str(parsed.noun_phrases)
 	print str(parsed.sentiment)
 	
@@ -38,7 +19,6 @@ def form_reply(text):
 		else:
 			print '2: not to be' # they used a different verb
 '''
-	return 'finished.'
 
 def find_candidate_parts_of_speech(parsed):
 	"""Given a parsed input, find the best pronoun, direct noun, adjective, and verb to match their input.

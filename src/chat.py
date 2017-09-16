@@ -1,59 +1,14 @@
-from textblob import TextBlob
+from textblob import TextBlob, Word
+from textblob.wordnet import VERB
 import random, logging
-from rules import *
+import rules as sentutil
+from keywords import * # keywords to look for
 from personality import * # our personality
-from nltk.parse.generate import generate, demo_grammar
-from nltk import CFG
+import emoji # to send back emoji
 import requests
 
-FILTER_WORDS = set([
-    "skank",
-    "wetback",
-    "bitch",
-    "cunt",
-    "dick",
-    "douchebag",
-    "dyke",
-    "fag",
-    "nigger",
-    "tranny",
-    "trannies",
-    "paki",
-    "pussy",
-    "retard",
-    "slut",
-    "titt",
-    "tits",
-    "wop",
-    "whore",
-    "chink",
-    "fatass",
-    "shemale",
-    "nigga",
-    "daygo",
-    "dego",
-    "dago",
-    "gook",
-    "kike",
-    "kraut",
-    "spic",
-    "twat",
-    "lesbo",
-    "homo",
-    "fatso",
-    "lardass",
-    "jap",
-    "biatch",
-    "tard",
-    "gimp",
-    "gyp",
-    "chinaman",
-    "chinamen",
-    "golliwog",
-    "crip",
-    "raghead",
-    "negro",
-    "hooker"])
+from nltk.parse.generate import generate, demo_grammar
+from nltk import CFG # unsure if i need these
 
 def post_message(message_text, request_url, sender_id):
     requests.post(request_url,
@@ -69,22 +24,43 @@ def start_typing(request_url, sender_id):
 
 def chat(text, request_url, sender_id):
 	start_typing(request_url, sender_id)
-	message_text = form_reply(text)
+	message_text = form_reply(text, request_url, sender_id)
 	post_message(message_text, request_url, sender_id)
 	#return respond(cleaned)
 	#grammar = CFG.fromstring(demo_grammar)
   	#return generate(grammar, n=1)
 
-GREETING_KEYWORDS = ("hello", "hi", "greetings", "sup", "what's up",)
+def form_reply(text, request_url, sender_id):
+	cleaned = text # sanitize text?
+	parsed = TextBlob(cleaned)
 
-def check_for_greeting(sentence):
-    """If any of the words in the user's input was a greeting, return a greeting response"""
-    for word in sentence.words:
+	check_for_greeting(parsed, request_url, sender_id)
+
+	pronoun, noun, adjective, verb = sentutil.find_candidate_parts_of_speech(parsed)
+	sent_type = sentutil.determine_sent_type(parsed, verb)
+
+	if sent_type == 'dec':
+		return 'This is a declarative sentence. I think.'
+	elif sent_type == 'imp':
+		return 'This is an imperative sentence. You\'re making me do something, I swear!'
+	elif sent_type == 'exc':
+		return 'This is an exclamatory sentence. Ahh!'
+	elif sent_type == 'int':
+		return 'This is an interrogative sentence?'
+	elif sent_type == '?':
+		return 'What was that, again?'
+
+
+
+
+'''Their stuff.'''
+
+def check_for_greeting(sent, request_url, sender_id):
+    for word in sent.words:
         if word.lower() in GREETING_KEYWORDS:
-            return random.choice(GREETING_RESPONSES)
-# start:example-none.py
-
-# end
+            post_message(random.choice(GREETING_RESPONSES), request_url, sender_id)
+            return True
+	return False
 
 # start:example-self.py
 # If the user tries to tell us something about ourselves, use one of these responses
@@ -111,57 +87,6 @@ def broback(sentence):
     logger.info("Broback: respond to %s", sentence)
     resp = respond(sentence)
     return resp
-
-
-def find_pronoun(sent):
-    """Given a sentence, find a preferred pronoun to respond with. Returns None if no candidate
-    pronoun is found in the input"""
-    pronoun = None
-
-    for word, part_of_speech in sent.pos_tags:
-        # Disambiguate pronouns
-        if part_of_speech == 'PRP' and word.lower() == 'you':
-            pronoun = 'I'
-        elif part_of_speech == 'PRP' and word.lower() == 'i':
-            # If the user mentioned themselves, then they will definitely be the pronoun
-            pronoun = 'You'
-        elif part_of_speech == 'PRP':
-        	pronoun = word # any other pronoun
-    return pronoun
-
-def find_verb(sent):
-    """Pick a candidate verb for the sentence."""
-    verb = None
-    pos = None
-    for word, part_of_speech in sent.pos_tags:
-        if part_of_speech.startswith('VB'):  # This is a verb
-            verb = word
-            pos = part_of_speech
-            break
-    return verb, pos
-
-def find_noun(sent):
-    """Given a sentence, find the best candidate noun."""
-    noun = None
-
-    if not noun:
-        for w, p in sent.pos_tags:
-            if p == 'NN':  # This is a noun
-                noun = w
-                break
-    if noun:
-        logger.info("Found noun: %s", noun)
-
-    return noun
-
-def find_adjective(sent):
-    """Given a sentence, find the best candidate adjective."""
-    adj = None
-    for w, p in sent.pos_tags:
-        if p == 'JJ':  # This is an adjective
-            adj = w
-            break
-    return adj
 
 
 
