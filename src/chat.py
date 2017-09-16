@@ -1,6 +1,9 @@
 from textblob import TextBlob
 import random, logging
+from rules import *
 from personality import * # our personality
+from nltk.parse.generate import generate, demo_grammar
+from nltk import CFG
 
 FILTER_WORDS = set([
     "skank",
@@ -56,11 +59,11 @@ logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
 
 def ask(text):
-	cleaned = text# sanitize text?
-	parsed = TextBlob(cleaned)
-
-	return respond(cleaned)
-	return str(parsed.tags)
+	
+	return reply(text)
+	#return respond(cleaned)
+	#grammar = CFG.fromstring(demo_grammar)
+  	#return generate(grammar, n=1)
 
 GREETING_KEYWORDS = ("hello", "hi", "greetings", "sup", "what's up",)
 

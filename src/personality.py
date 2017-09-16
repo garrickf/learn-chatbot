@@ -17,6 +17,6 @@ GREETING_RESPONSES = [
     #"'sup bro", 
     #"hey", 
     #"*nods*", 
-    "hey you get my snap?" + EMOJI_TO_PYTHON['heart_eyes'],
+    "hey you get my snap?" + EMOJI_TO_PYTHON['heart_eyes'] + u'\U0001F993',
     #":3"
 ]

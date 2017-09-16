@@ -119,7 +119,7 @@ def fb_webhook():
                           headers={'Content-Type': 'application/json'},
                           json={'recipient': {'id': sender_id},
                                 'sender_action': "typing_on"})
-            #time.sleep(5) # sleep for five seconds
+            #time.sleep(1) # sleep for one second
             requests.post(request_url,
                           headers={'Content-Type': 'application/json'},
                           json={'recipient': {'id': sender_id},
