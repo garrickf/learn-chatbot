@@ -4,6 +4,7 @@ from rules import *
 from personality import * # our personality
 from nltk.parse.generate import generate, demo_grammar
 from nltk import CFG
+import requests
 
 FILTER_WORDS = set([
     "skank",
@@ -54,13 +55,22 @@ FILTER_WORDS = set([
     "negro",
     "hooker"])
 
-logging.basicConfig()
-logger = logging.getLogger()
-logger.setLevel(logging.DEBUG)
+def post_message(message_text, request_url, sender_id):
+    requests.post(request_url,
+                  headers={'Content-Type': 'application/json'},
+                  json={'recipient': {'id': sender_id},
+                        'message': {'text': message_text}})
 
-def ask(text):
-	
-	return reply(text)
+def start_typing(request_url, sender_id):
+    requests.post(request_url,
+                  headers={'Content-Type': 'application/json'},
+                  json={'recipient': {'id': sender_id},
+                        'sender_action': "typing_on"})
+
+def chat(text, request_url, sender_id):
+	start_typing(request_url, sender_id)
+	message_text = form_reply(text)
+	post_message(message_text, request_url, sender_id)
 	#return respond(cleaned)
 	#grammar = CFG.fromstring(demo_grammar)
   	#return generate(grammar, n=1)

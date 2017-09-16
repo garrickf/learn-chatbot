@@ -2,7 +2,7 @@ from textblob import Word, TextBlob
 from textblob.wordnet import VERB
 #import logging
 
-def reply(text):
+def form_reply(text):
 	cleaned = text # sanitize text?
 	parsed = TextBlob(cleaned)
 	pronoun, noun, adjective, verb = find_candidate_parts_of_speech(parsed)

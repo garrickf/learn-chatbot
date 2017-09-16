@@ -112,10 +112,11 @@ def fb_webhook():
             if 'text' not in message:
                 continue
             sender_id = event['sender']['id']
-            message_text = chat.ask(message['text'])
+            
             request_url = FACEBOOK_API_MESSAGE_SEND_URL % (
                 app.config['FACEBOOK_PAGE_ACCESS_TOKEN'])
-            requests.post(request_url,
+            chat.chat(message['text'], request_url, sender_id)
+            '''requests.post(request_url,
                           headers={'Content-Type': 'application/json'},
                           json={'recipient': {'id': sender_id},
                                 'sender_action': "typing_on"})
@@ -123,7 +124,7 @@ def fb_webhook():
             requests.post(request_url,
                           headers={'Content-Type': 'application/json'},
                           json={'recipient': {'id': sender_id},
-                                'message': {'text': message_text}})
+                                'message': {'text': message_text}})'''
 
     # Return an empty response.
     return ''
