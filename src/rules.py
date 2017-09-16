@@ -5,13 +5,24 @@ from textblob.wordnet import VERB
 def reply(text):
 	cleaned = text # sanitize text?
 	parsed = TextBlob(cleaned)
-	prob_is_imperative(parsed)
-	
-	print str(parsed.tags)
+	pronoun, noun, adjective, verb = find_candidate_parts_of_speech(parsed)
+	sent_type = determine_sent_type(parsed, verb)
+	#print str(parsed.tags)
+	#print sent_type
+	if sent_type == 'dec':
+		return 'This is a declarative sentence. I think.'
+	elif sent_type == 'imp':
+		return 'This is an imperative sentence. You\'re making me do something, I swear!'
+	elif sent_type == 'exc':
+		return 'This is an exclamatory sentence. Ahh!'
+	elif sent_type == 'int':
+		return 'This is an interrogative sentence?'
+	elif sent_type == '?':
+		return 'What was that, again?'
 	'''
 	print str(parsed.noun_phrases)
 	print str(parsed.sentiment)
-	pronoun, noun, adjective, verb = find_candidate_parts_of_speech(parsed)
+	
 
 	if noun:
 		print '3: tell me more about ' + noun[0] # possible subject: a noun they said
@@ -42,7 +53,7 @@ def find_candidate_parts_of_speech(parsed):
 		adjective = find_adjective(sent)
 		verb = find_verb(sent)
 	#logger.info("Pronoun=%s, noun=%s, adjective=%s, verb=%s", pronoun, noun, adjective, verb)
-	print 'sig: ', pronoun, noun, adjective, verb
+	#print 'sig: ', pronoun, noun, adjective, verb
 	return pronoun, noun, adjective, verb
 
 def find_pronoun(sent):
@@ -87,11 +98,71 @@ def find_adjective(sent):
 			break
 	return adj
 
-def prob_is_imperative(sent):
+def determine_sent_type(parsed, verb):
+	probs = []
+	probs.append(prob_is_imperative(parsed, verb))
+	probs.append(prob_is_interrogative(parsed))
+	probs.append(prob_is_exclamatory(parsed))
+	probs.append(prob_is_declarative(parsed, verb))
+	curr_max = .3
+	max_idx = 4
+	for idx, val in enumerate(probs):
+		if val >= curr_max:
+			curr_max = val
+			max_idx = idx
+	return ['imp', 'int', 'exc', 'dec', '?'][max_idx]
+
+def prob_is_imperative(sent, verb):
 	certainty = 0
 	first = sent.tags[0]
-	if first[1] == 'VB' or first[1] == 'VBP' or first[0].lower() == 'you':
-		print 'most likely imperative'
-	else:
-		print 'didnt catch anything'
+	if first[1] == 'VB' or first[1] == 'VBP': # begins with verb (strong)
+		certainty += .9
+	if first[1] == 'MD': # begins with modal (med)
+		certainty += .5
+	if first[0].lower() == 'you' and sent.tags[1][1] == 'MD': # begins with you + modal (med)
+		certainty += .6
+	if first[0].lower() == 'you': # begins with you (weak)
+		certainty += .5 # note: what about weights and conditional probabilities? :)
+	if verb is None: # could be misinterpreting the front! (weak)
+		certainty += .3
+	if sent[-1] == '.': # period (weak)
+		certainty += .1
+	print 'imp', certainty 
+	return certainty
 
+def prob_is_interrogative(sent):
+	certainty = 0
+	first = sent.tags[0]
+	if first[1].startswith('W') : # begins with q-word (strong)
+		certainty += .9
+	if sent[-1] == '?': # ends with q-mark (strong)
+		certainty += .9
+	print 'int', certainty 
+	return certainty
+
+def prob_is_exclamatory(sent):
+	certainty = 0
+	first = sent.tags[0]
+	if first[1] == 'UH' : # begins with interjection (strong)
+		certainty += .9
+	if sent[-1] == '!': # ends with !-mark (strong)
+		certainty += .9
+	for char in sent: # every capital letter counts (med, scaled)
+		if char.isupper():
+			certainty += .8 / len(sent)
+	print 'exc', certainty 
+	return certainty
+
+def prob_is_declarative(sent, verb):
+	certainty = 0
+	first = sent.tags[0]
+	if verb[0] is not None: # to be verb (strong)
+		verb_word = verb[0]
+		if Word(verb_word).lemmatize('v') == 'be':
+			certainty += .6
+	if first[1].startswith('N'): # begins with noun (strong)
+		certainty += .4
+	if sent[-1] == '.': # ends with .
+		certainty += .2
+	print 'dec', certainty 
+	return certainty
