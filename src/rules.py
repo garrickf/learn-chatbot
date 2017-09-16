@@ -147,3 +147,17 @@ def prob_is_declarative(sent, verb):
 		certainty += .2
 	print 'dec', certainty 
 	return certainty
+
+def determine_question_type(sent):
+	qwords = ['who', 'what', 'where', 'when', 'why', 'how']
+	for word in sent.words:
+		if word.lower() in qwords:
+			return word.lower()
+	return 'other'
+
+def is_tobe(verb):
+	if verb[0] is not None: # to be verb
+		verb_word = verb[0]
+		if Word(verb_word).lemmatize('v') == 'be':
+			return True
+	return False		

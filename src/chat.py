@@ -22,6 +22,18 @@ def start_typing(request_url, sender_id):
                   json={'recipient': {'id': sender_id},
                         'sender_action': "typing_on"})
 
+def post_meme(request_url, sender_id):
+    requests.post(request_url,
+                  headers={'Content-Type': 'application/json'},
+                  json={'recipient': {'id': sender_id},
+                        'message': {
+                        	"attachment":{"type":"image",
+								"payload":{
+									"url":"https://i.redd.it/perk8gpra4mz.png"
+								}
+							}
+                        }})
+
 def chat(text, request_url, sender_id):
 	start_typing(request_url, sender_id)
 	form_reply(text, request_url, sender_id)
@@ -71,22 +83,80 @@ def handle_exclamation(sent, request_url, sender_id):
 		post_message(str(sent) + '!!!!', request_url, sender_id)
 
 def handle_question(sent, request_url, sender_id):
-	case = random.randint(0, 3)
+	pronoun, noun, adjective, verb = sentutil.find_candidate_parts_of_speech(sent)
+	
+	question_type = sentutil.determine_question_type(sent)
+	# tobe = sentutil.is_tobe(verb)
 
-	if case <= 3:
-		post_message(random.choice(CANNED_QUESTION_RESPONSES), request_url, sender_id)
+	if question_type == 'who':
+		if pronoun == 'I':
+			post_message(random.choice(WHO_ABOUT_USER_QUESTION_RESPONSES), request_url, sender_id)
+		elif pronoun == 'you':
+			post_message(random.choice(WHO_ABOUT_BOT_QUESTION_RESPONSES), request_url, sender_id)
+		else:
+			post_message(random.choice(WHO_NEUTRAL_QUESTION_RESPONSES), request_url, sender_id)
+	elif question_type == 'what':
+		if pronoun == 'I':
+			post_message(random.choice(WHAT_ABOUT_USER_QUESTION_RESPONSES), request_url, sender_id)
+		elif pronoun == 'you':
+			post_message(random.choice(WHAT_ABOUT_BOT_QUESTION_RESPONSES), request_url, sender_id)
+		else:
+			print noun
+			if noun is not None and len(Word(noun[0]).definitions) != 0:
+				post_message(random.choice(Word(noun[0]).definitions), request_url, sender_id)
+			else:
+				post_message(random.choice(WHAT_NEUTRAL_QUESTION_RESPONSES), request_url, sender_id)
+	elif question_type == 'where':
+		if pronoun == 'I':
+			post_message(random.choice(WHERE_ABOUT_USER_QUESTION_RESPONSES), request_url, sender_id)
+		elif pronoun == 'you':
+			post_message(random.choice(WHERE_ABOUT_BOT_QUESTION_RESPONSES), request_url, sender_id)
+		else:
+			post_message(random.choice(WHERE_NEUTRAL_QUESTION_RESPONSES), request_url, sender_id)
+	elif question_type == 'when':
+		if pronoun == 'I':
+			post_message(random.choice(WHEN_ABOUT_USER_QUESTION_RESPONSES), request_url, sender_id)
+		elif pronoun == 'you':
+			post_message(random.choice(WHEN_ABOUT_BOT_QUESTION_RESPONSES), request_url, sender_id)
+		else:
+			post_message(random.choice(WHEN_NEUTRAL_QUESTION_RESPONSES), request_url, sender_id)
+	elif question_type == 'why':
+		if pronoun == 'I':
+			post_message(random.choice(WHY_ABOUT_USER_QUESTION_RESPONSES), request_url, sender_id)
+		elif pronoun == 'you':
+			post_message(random.choice(WHY_ABOUT_BOT_QUESTION_RESPONSES), request_url, sender_id)
+		else:
+			post_message(random.choice(WHY_NEUTRAL_QUESTION_RESPONSES), request_url, sender_id)
+	elif question_type == 'how':
+		if pronoun == 'I':
+			post_message(random.choice(HOW_ABOUT_USER_QUESTION_RESPONSES), request_url, sender_id)
+		elif pronoun == 'you':
+			post_message(random.choice(HOW_ABOUT_BOT_QUESTION_RESPONSES), request_url, sender_id)
+		else:
+			post_message(random.choice(HOW_NEUTRAL_QUESTION_RESPONSES), request_url, sender_id)
+	else:
+		post_message(random.choice(CANNED_QUESTION_RESPONSES) + pronoun, request_url, sender_id)
+
+	#case = random.randint(0, 5)
+
+	#if case <= 3:
+		#post_message(random.choice(CANNED_QUESTION_RESPONSES), request_url, sender_id)
 
 def handle_command(sent, request_url, sender_id):
 	case = random.randint(0, 3)
+	pronoun, noun, adjective, verb = sentutil.find_candidate_parts_of_speech(sent)
 
-	if case <= 3:
+	if noun is not None and noun[0].lower() == 'meme':
+		post_meme(request_url, sender_id)
+		post_message('you bingo bonGOED the wrONG PERsoN', request_url, sender_id)
+
+	elif case <= 3:
 		post_message(random.choice(CANNED_COMMAND_RESPONSES), request_url, sender_id)
 
 def handle_statement(sent, request_url, sender_id):
 	pronoun, noun, adjective, verb = sentutil.find_candidate_parts_of_speech(sent)
 	
 	case = random.randint(0, 3)
-	case = 2
 
 	if case == 0: # can a response sometimes
 		post_message(random.choice(CANNED_STATEMENT_RESPONSES), request_url, sender_id)
@@ -119,6 +189,13 @@ def handle_statement(sent, request_url, sender_id):
 			post_message('ok. maybe a little subjective bro but im here for it', request_url, sender_id)
 		else:
 			post_message('hold me, the subjectivity lol', request_url, sender_id)
+
+
+
+
+
+
+
 
 '''Their stuff.'''
 
