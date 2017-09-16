@@ -46,23 +46,24 @@ def form_reply(text, request_url, sender_id):
 	cleaned = text # sanitize text?
 	parsed = TextBlob(cleaned)
 
-	check_for_greeting(parsed, request_url, sender_id)
+	if check_for_greeting(parsed, request_url, sender_id):
+        pass
+    else:
+        # check passphrases: next step!
 
-	# check passphrases: next step!
+        pronoun, noun, adjective, verb = sentutil.find_candidate_parts_of_speech(parsed)
+        sent_type = sentutil.determine_sent_type(parsed, verb)
 
-	pronoun, noun, adjective, verb = sentutil.find_candidate_parts_of_speech(parsed)
-	sent_type = sentutil.determine_sent_type(parsed, verb)
-
-	if sent_type == 'dec':
-		handle_statement(parsed, request_url, sender_id)
-	elif sent_type == 'imp':
-		handle_command(parsed, request_url, sender_id)
-	elif sent_type == 'exc':
-		handle_exclamation(parsed, request_url, sender_id)
-	elif sent_type == 'int':
-		handle_question(parsed, request_url, sender_id)
-	elif sent_type == '?':
-		post_message(random.choice(NONE_RESPONSES), request_url, sender_id)
+        if sent_type == 'dec':
+        	handle_statement(parsed, request_url, sender_id)
+        elif sent_type == 'imp':
+        	handle_command(parsed, request_url, sender_id)
+        elif sent_type == 'exc':
+        	handle_exclamation(parsed, request_url, sender_id)
+        elif sent_type == 'int':
+        	handle_question(parsed, request_url, sender_id)
+        elif sent_type == '?':
+        	post_message(random.choice(NONE_RESPONSES), request_url, sender_id)
 
 
 def check_for_greeting(sent, request_url, sender_id):

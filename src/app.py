@@ -27,7 +27,7 @@ app.config['FACEBOOK_PAGE_ACCESS_TOKEN'] = os.environ[
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'mysecretkey')
 app.config['FACEBOOK_WEBHOOK_VERIFY_TOKEN'] = 'mysecretverifytoken'
 
-
+'''
 db = SQLAlchemy(app)
 
 
@@ -47,7 +47,7 @@ class Address(db.Model):
     # This adds an attribute 'user' to each address, and an attribute
     # 'addresses' (containing a list of addresses) to each user.
     user = db.relationship('User', backref='addresses')
-
+'''
 
 @app.route('/')
 def index():
